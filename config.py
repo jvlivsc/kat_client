@@ -7,3 +7,4 @@ ASU_SERVER = 'asu.cravtr.ru'
 USER = 'kat'
 DATAFILE = '/home/kassa/data.dat'
 LOG_LEVEL = logging.DEBUG
+SLEEP = 5

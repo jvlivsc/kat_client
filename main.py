@@ -40,9 +40,11 @@ def check_param(host_data, param, check):
 
 
 def loop():
-    logger = logging.getLogger('main.loop')
     global online
+
+    logger = logging.getLogger('main.loop')
     host_data = {}
+
     if checks.check_alive():
         if not online:
             logger.info('Host online.')
@@ -69,6 +71,7 @@ def loop():
             rq_subnet = requests.get('http://' + cfg.SERVER + '/api/station/subnet/', data={'name': f'{subnet}'})
             subnet_json = json.loads(rq_subnet.text)
             info['station'] = subnet_json['results']['station']
+
             if register.register(info):
                 logger.debug('Registration successfull!')
             else:
@@ -77,6 +80,7 @@ def loop():
         if rq.status_code == 200:
             logger.info('Host alredy registered, checking ssh tunnel')
             tunnel_up = checks.check_tunnel(host_data['ssh'], host_data['vnc'])
+
             if tunnel_up:
                 logger.info('SSH tunnel is up.')
             else:
@@ -85,6 +89,7 @@ def loop():
             send_json = {'id': host_data['pk']}
             logger.info('Try to touch server...')
             rq_touch = requests.post('http://' + cfg.SERVER + '/api/touch/', data=send_json)
+
             if rq_touch.status_code == 200:
                 logger.info('Server touched.')
             else:
@@ -96,6 +101,7 @@ def loop():
 
     data_file = Path(cfg.DATAFILE)
     checks_data = ConfigParser()
+
     if data_file.is_file():
         checks_data.read(data_file)
     else:
@@ -104,22 +110,13 @@ def loop():
             'fp': False,
             'asu': False
         }
+
     data = checks_data['DATA']
-
-    logger.info('> Matrix printer')
-
     data['mp'] = str(check_param(host_data, 'check_mp', checks.check_mp()))
-    logger.debug(f'Matrix printer check result: {data["mp"]}')
-
-    logger.info('> Fiscal printer')
     data['fp'] = str(check_param(host_data, 'check_fp', checks.check_fp()))
-    logger.debug(f'Fiscal printer check result: {data["fp"]}')
-
-    logger.info('> Server ASU')
     data['asu'] = str(check_param(host_data, 'check_asu', checks.check_asu()))
-    logger.debug(f'Server check result: {data["asu"]}')
-
     checks_data['DATA'] = data
+
     with open(data_file, 'w') as conf:
         checks_data.write(conf)
 
@@ -136,11 +133,6 @@ def main():
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-    # logging.basicConfig(
-    #     filename='/var/log/kat_client.log',
-    #     format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-    #     level=cfg.LOG_LEVEL
-    # )
     logger.info('---------- Run ----------')
     logger.info(f'> log level: {logger.level}')
 
@@ -159,7 +151,7 @@ def main():
     while True:
         start_time = time.time()
         loop()
-        time.sleep(5)
+        time.sleep(cfg.SLEEP)
         logger.debug(f'Execution time: {time.time() - start_time}')
 
 

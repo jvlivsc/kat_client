@@ -22,35 +22,46 @@ def check_alive():
 
 def check_asu():
     logger = logging.getLogger('main.checks.check_asu')
+    logger.info('> Server ASU')
+
+    result = False
+
     server_status = subprocess.run(
         ['ping', '-c', '1', cfg.ASU_SERVER],
         capture_output=True
     )
-    logger.debug(f'Return code for asu_check ping: {server_status.returncode}')
+    logger.debug(f'Return code for asu ping: {server_status.returncode}')
     if server_status.returncode == 0:
         try:
             rq = requests.get('http://' + cfg.ASU_SERVER + ':5000/bush-api/ns/trips/292/all?showAll=false')
             if rq.status_code == 200:
-                return True
+                result = True
         except ConnectionError:
-            print('Connection error')
             logger.error(f'{ConnectionError.strerror}')
-    return False
+
+    logger.info(f'Server check result: {result}')
+    return result
 
 
 def check_mp():
     logger = logging.getLogger('main.checks.check_mp')
+    logger.info('> Matrix printer')
     mp_status = subprocess.run(['bash', '../sh/mp.sh'], capture_output=True)
     logger.debug(f'Return code for mp.sh: {mp_status.returncode}')
-    if mp_status.returncode == 0:
-        return True
-    return False
+
+    result = True if mp_status.returncode == 0 else False
+    logger.info(f'Matrix printer check result: {result}')
+    return result
 
 
 def check_fp():
     logger = logging.getLogger('main.checks.check_fp')
+    logger.info('> Fiscal printer')
+
     iface = filter(lambda str: 'en' in str, netifaces.interfaces())
     iface = list(iface)
+
+    result = False
 
     if len(iface) > 1:
         fp_status = subprocess.run(
@@ -59,8 +70,10 @@ def check_fp():
         )
         logger.debug(f'Return code for fp.sh: {fp_status.returncode}')
         if fp_status.returncode == 0:
-            return True
-    return False
+            result = True
+
+    logger.info(f'Fiscal printer check result: {result}')
+    return result
 
 
 def check_tunnel(ssh, vnc):
