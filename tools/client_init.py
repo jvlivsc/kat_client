@@ -11,7 +11,7 @@ def init():
     iface = list(iface)
     if len(iface) > 1:
         init_status = subprocess.run(
-            ['bash', 'init.sh', iface[0], iface[1]],
+            ['bash', '../sh/init.sh', iface[0], iface[1]],
             capture_output=True
         )
         logging.debug(f'Return code for init.sh: {init_status.returncode}')

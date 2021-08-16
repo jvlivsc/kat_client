@@ -8,11 +8,10 @@ import config as cfg
 import netifaces
 import os
 import time
-import tools
 
 from pathlib import Path
 from configparser import ConfigParser
-
+from tools import update, client_init, checks, register, system_info
 online = False
 
 
@@ -41,12 +40,12 @@ def check_param(host_data, param, check):
 def loop():
     global online
     host_data = {}
-    if tools.check_alive():
+    if checks.check_alive():
         if not online:
             logging.info('Host online.')
             online = True
 
-        rq_data = tools.sys_info()
+        rq_data = system_info.sys_info()
 
         try:
             rq = requests.get('http://' + cfg.SERVER + '/api/host/', data=rq_data)
@@ -61,20 +60,20 @@ def loop():
         if rq.status_code == 400:
             logging.warning('Host not registered, try to register')
 
-            info = tools.sys_info()
+            info = system_info.sys_info()
             ip = info['ip']
             subnet = ip.replace(ip[ip.rfind('.') + 1:len(ip)], '0/24')
             rq_subnet = requests.get('http://' + cfg.SERVER + '/api/station/subnet/', data={'name': f'{subnet}'})
             subnet_json = json.loads(rq_subnet.text)
             info['station'] = subnet_json['results']['station']
-            if tools.register(info):
+            if register.register(info):
                 logging.debug('Registration successfull!')
             else:
                 logging.error('Registration error!')
 
         if rq.status_code == 200:
             logging.info('Host alredy registered, checking ssh tunnel')
-            tunnel_up = tools.tunnel_check(host_data['ssh'], host_data['vnc'])
+            tunnel_up = checks.tunnel_check(host_data['ssh'], host_data['vnc'])
             if tunnel_up:
                 logging.info('SSH tunnel is up.')
             else:
@@ -106,15 +105,15 @@ def loop():
 
     logging.info('> Matrix printer')
 
-    data['mp'] = str(check_param(host_data, 'check_mp', tools.mp_check()))
+    data['mp'] = str(check_param(host_data, 'check_mp', checks.mp_check()))
     logging.debug(f'Matrix printer check result: {data["mp"]}')
 
     logging.info('> Fiscal printer')
-    data['fp'] = str(check_param(host_data, 'check_fp', tools.fp_check()))
+    data['fp'] = str(check_param(host_data, 'check_fp', checks.fp_check()))
     logging.debug(f'Fiscal printer check result: {data["fp"]}')
 
     logging.info('> Server ASU')
-    data['asu'] = str(check_param(host_data, 'check_asu', tools.asu_check()))
+    data['asu'] = str(check_param(host_data, 'check_asu', checks.asu_check()))
     logging.debug(f'Server check result: {data["asu"]}')
 
     checks_data['DATA'] = data
@@ -132,13 +131,13 @@ def main():
     logging.info(f'> log level: {logging.root.level}')
 
     logging.info('> Check updates')
-    if tools.update():
+    if update.update():
         logging.info('All scripts up to date')
     else:
         logging.warning('Can\'t update scripts!')
 
     logging.info('> Init')
-    if tools.init():
+    if client_init.init():
         logging.info('Success setup initial parameters.')
     else:
         logging.warning('Trouble with setup initial parameters.')

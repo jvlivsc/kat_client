@@ -35,7 +35,7 @@ def asu_check():
 
 
 def mp_check():
-    mp_status = subprocess.run(['bash', 'mp.sh'], capture_output=True)
+    mp_status = subprocess.run(['bash', '../sh/mp.sh'], capture_output=True)
     logging.debug(f'Return code for mp.sh: {mp_status.returncode}')
     if mp_status.returncode == 0:
         return True
@@ -48,7 +48,7 @@ def fp_check():
 
     if len(iface) > 1:
         fp_status = subprocess.run(
-            ['bash', 'fp.sh', iface[0], iface[1]],
+            ['bash', '../sh/fp.sh', iface[0], iface[1]],
             capture_output=True
         )
         logging.debug(f'Return code for fp.sh: {fp_status.returncode}')
@@ -59,7 +59,7 @@ def fp_check():
 
 def tunnel_check(ssh, vnc):
     result = subprocess.run(
-        ['bash', 'tunnel.sh', cfg.SERVER, cfg.USER, str(ssh), str(vnc)],
+        ['bash', '../sh/tunnel.sh', cfg.SERVER, cfg.USER, str(ssh), str(vnc)],
         capture_output=False
     )
     logging.debug(f'Return code for tunnel.sh: {result.returncode}')
