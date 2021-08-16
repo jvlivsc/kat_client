@@ -86,3 +86,19 @@ def check_tunnel(ssh, vnc):
     if result.returncode == 0:
         return True
     return False
+
+
+def has_differencess(info, rq):
+    local_ip = info['ip']
+    stored_ip = rq['ip']
+    local_mac = info['mac']
+    stored_mac = rq['mac']
+    local_hostname = info['hostname']
+    stored_hostname = rq['hostname']
+
+    if local_ip == stored_ip and local_mac == stored_mac and local_hostname == stored_hostname:
+        result = False
+    else:
+        result = True
+
+    return result

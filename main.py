@@ -51,9 +51,10 @@ def loop():
             online = True
 
         rq_data = system_info.sys_info()
-
+        is_diffs = False
         try:
             rq = requests.get('http://' + cfg.SERVER + '/api/host/', data=rq_data)
+            is_diffs = checks.has_differencess(rq_data, json.loads(rq.text))
         except ConnectionError:
             logger.error(f'{ ConnectionError.strerror }')
 
@@ -62,7 +63,7 @@ def loop():
         except JSONDecodeError:
             host_data = {}
 
-        if rq.status_code == 400:
+        if rq.status_code == 400 or is_diffs:
             logger.warning('Host not registered, try to register')
 
             info = system_info.sys_info()
@@ -71,6 +72,7 @@ def loop():
             rq_subnet = requests.get('http://' + cfg.SERVER + '/api/station/subnet/', data={'name': f'{subnet}'})
             subnet_json = json.loads(rq_subnet.text)
             info['station'] = subnet_json['results']['station']
+            logger.debug(f'Registration data: {info}')
 
             if register.register(info):
                 logger.debug('Registration successfull!')
