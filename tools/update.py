@@ -1,4 +1,7 @@
 import subprocess
+import logging
+
+module_logger = logging.getLogger('main.update')
 
 
 def update():

@@ -12,6 +12,8 @@ import time
 from pathlib import Path
 from configparser import ConfigParser
 from tools import update, client_init, checks, register, system_info
+from logging.handlers import RotatingFileHandler
+
 online = False
 
 
@@ -38,11 +40,12 @@ def check_param(host_data, param, check):
 
 
 def loop():
+    logger = logging.getLogger('main.loop')
     global online
     host_data = {}
     if checks.check_alive():
         if not online:
-            logging.info('Host online.')
+            logger.info('Host online.')
             online = True
 
         rq_data = system_info.sys_info()
@@ -50,7 +53,7 @@ def loop():
         try:
             rq = requests.get('http://' + cfg.SERVER + '/api/host/', data=rq_data)
         except ConnectionError:
-            logging.error(f'{ ConnectionError.strerror }')
+            logger.error(f'{ ConnectionError.strerror }')
 
         try:
             host_data = json.loads(rq.text)
@@ -58,7 +61,7 @@ def loop():
             host_data = {}
 
         if rq.status_code == 400:
-            logging.warning('Host not registered, try to register')
+            logger.warning('Host not registered, try to register')
 
             info = system_info.sys_info()
             ip = info['ip']
@@ -67,28 +70,28 @@ def loop():
             subnet_json = json.loads(rq_subnet.text)
             info['station'] = subnet_json['results']['station']
             if register.register(info):
-                logging.debug('Registration successfull!')
+                logger.debug('Registration successfull!')
             else:
-                logging.error('Registration error!')
+                logger.error('Registration error!')
 
         if rq.status_code == 200:
-            logging.info('Host alredy registered, checking ssh tunnel')
-            tunnel_up = checks.tunnel_check(host_data['ssh'], host_data['vnc'])
+            logger.info('Host alredy registered, checking ssh tunnel')
+            tunnel_up = checks.check_tunnel(host_data['ssh'], host_data['vnc'])
             if tunnel_up:
-                logging.info('SSH tunnel is up.')
+                logger.info('SSH tunnel is up.')
             else:
-                logging.warning('SSH tunnel have problem!')
+                logger.warning('SSH tunnel have problem!')
 
             send_json = {'id': host_data['pk']}
-            logging.info('Try to touch server...')
+            logger.info('Try to touch server...')
             rq_touch = requests.post('http://' + cfg.SERVER + '/api/touch/', data=send_json)
             if rq_touch.status_code == 200:
-                logging.info('Server touched.')
+                logger.info('Server touched.')
             else:
-                logging.warning('Can\'t touch server!')
+                logger.warning('Can\'t touch server!')
     else:
         if online:
-            logging.warning('Host offline!')
+            logger.warning('Host offline!')
             online = False
 
     data_file = Path(cfg.DATAFILE)
@@ -103,18 +106,18 @@ def loop():
         }
     data = checks_data['DATA']
 
-    logging.info('> Matrix printer')
+    logger.info('> Matrix printer')
 
-    data['mp'] = str(check_param(host_data, 'check_mp', checks.mp_check()))
-    logging.debug(f'Matrix printer check result: {data["mp"]}')
+    data['mp'] = str(check_param(host_data, 'check_mp', checks.check_mp()))
+    logger.debug(f'Matrix printer check result: {data["mp"]}')
 
-    logging.info('> Fiscal printer')
-    data['fp'] = str(check_param(host_data, 'check_fp', checks.fp_check()))
-    logging.debug(f'Fiscal printer check result: {data["fp"]}')
+    logger.info('> Fiscal printer')
+    data['fp'] = str(check_param(host_data, 'check_fp', checks.check_fp()))
+    logger.debug(f'Fiscal printer check result: {data["fp"]}')
 
-    logging.info('> Server ASU')
-    data['asu'] = str(check_param(host_data, 'check_asu', checks.asu_check()))
-    logging.debug(f'Server check result: {data["asu"]}')
+    logger.info('> Server ASU')
+    data['asu'] = str(check_param(host_data, 'check_asu', checks.check_asu()))
+    logger.debug(f'Server check result: {data["asu"]}')
 
     checks_data['DATA'] = data
     with open(data_file, 'w') as conf:
@@ -122,31 +125,42 @@ def loop():
 
 
 def main():
-    logging.basicConfig(
-        filename='/var/log/kat_client.log',
-        format='%(asctime)s %(levelname)s: %(message)s',
-        level=logging.INFO
+    logger = logging.getLogger('main')
+    logger.setLevel(cfg.LOG_LEVEL)
+    file_handler = RotatingFileHandler(
+        '/var/log/kat_client.log',
+        maxBytes=10485760,
+        backupCount=3
     )
-    logging.info('---------- Run ----------')
-    logging.info(f'> log level: {logging.root.level}')
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
-    logging.info('> Check updates')
+    # logging.basicConfig(
+    #     filename='/var/log/kat_client.log',
+    #     format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+    #     level=cfg.LOG_LEVEL
+    # )
+    logger.info('---------- Run ----------')
+    logger.info(f'> log level: {logger.level}')
+
+    logger.info('> Check updates')
     if update.update():
-        logging.info('All scripts up to date')
+        logger.info('All scripts up to date')
     else:
-        logging.warning('Can\'t update scripts!')
+        logger.warning('Can\'t update scripts!')
 
-    logging.info('> Init')
+    logger.info('> Init')
     if client_init.init():
-        logging.info('Success setup initial parameters.')
+        logger.info('Success setup initial parameters.')
     else:
-        logging.warning('Trouble with setup initial parameters.')
+        logger.warning('Trouble with setup initial parameters.')
 
     while True:
         start_time = time.time()
         loop()
         time.sleep(5)
-        logging.debug(f'Execution time: {time.time() - start_time}')
+        logger.debug(f'Execution time: {time.time() - start_time}')
 
 
 if __name__ == "__main__":

@@ -3,8 +3,11 @@ import netifaces
 import logging
 import subprocess
 
+module_logger = logging.getLogger('main.client_init')
+
 
 def init():
+    logger = logging.getLogger('main.client_init.init')
     dir = os.path.dirname(os.path.realpath(__file__))
     os.chdir(dir)
     iface = filter(lambda str: 'en' in str, netifaces.interfaces())
@@ -14,7 +17,7 @@ def init():
             ['bash', '../sh/init.sh', iface[0], iface[1]],
             capture_output=True
         )
-        logging.debug(f'Return code for init.sh: {init_status.returncode}')
+        logger.debug(f'Return code for init.sh: {init_status.returncode}')
         if init_status.returncode == 0:
             return True
     return False

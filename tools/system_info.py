@@ -1,7 +1,10 @@
 # get system info: ip, mac, hostname
 
 import netifaces
+import logging
 import os
+
+module_logger = logging.getLogger('main.system_info')
 
 
 def sys_info():
