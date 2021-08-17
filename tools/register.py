@@ -2,6 +2,8 @@ import requests
 import logging
 import config as cfg
 
+from requests import ConnectionError
+
 module_logger = logging.getLogger('main.register')
 
 
@@ -12,9 +14,8 @@ def register(data):
         rq = requests.post('http://' + cfg.SERVER + '/api/host/', data=data)
         if rq.status_code == 400:
             return False
-    except ConnectionError:
-        print('Connection error')
-        logger.error(f'Error {ConnectionError.strerror}')
+    except ConnectionError as connection_error:
+        logger.error(f'Error {connection_error}')
         return False
 
     return True

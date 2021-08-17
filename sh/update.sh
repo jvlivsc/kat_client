@@ -2,7 +2,7 @@
 
 HOME_DIR=$(pwd)
 echo Home dir is $HOME_DIR
-SSH_KEY="id_tunnel_rsa"
+SSH_KEY="../id_tunnel_rsa.pub"
 SCRIPT="/home/kat/install/kat_client/"
 SERVER="kat@10.2.3.55"
 main(){

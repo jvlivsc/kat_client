@@ -4,6 +4,8 @@ import subprocess
 import netifaces
 import requests
 
+from requests import ConnectionError
+
 module_logger = logging.getLogger('main.checks')
 
 
@@ -36,8 +38,8 @@ def check_asu():
             rq = requests.get('http://' + cfg.ASU_SERVER + ':5000/bush-api/ns/trips/292/all?showAll=false')
             if rq.status_code == 200:
                 result = True
-        except ConnectionError:
-            logger.error(f'{ConnectionError.strerror}')
+        except ConnectionError as connection_error:
+            logger.error(f'{connection_error}')
 
     logger.info(f'Server check result: {result}')
     return result

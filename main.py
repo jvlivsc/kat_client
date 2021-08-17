@@ -1,6 +1,5 @@
 #! /usr/bin/python3
 
-from json.decoder import JSONDecodeError
 import logging
 import json
 import requests
@@ -13,6 +12,8 @@ from pathlib import Path
 from configparser import ConfigParser
 from tools import update, client_init, checks, register, system_info
 from logging.handlers import RotatingFileHandler
+from requests import ConnectionError
+from json.decoder import JSONDecodeError
 
 online = False
 
@@ -55,8 +56,8 @@ def loop():
         try:
             rq = requests.get('http://' + cfg.SERVER + '/api/host/', data=rq_data)
             is_diffs = checks.has_differencess(rq_data, json.loads(rq.text))
-        except ConnectionError:
-            logger.error(f'{ ConnectionError.strerror }')
+        except ConnectionError as connection_error:
+            logger.error(f'{connection_error}')
 
         try:
             host_data = json.loads(rq.text)
