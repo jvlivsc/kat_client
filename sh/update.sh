@@ -1,12 +1,12 @@
 #! /bin/bash
 
-HOME_DIR=$(pwd)
+HOME_DIR="/opt/kat_client/"
 echo Home dir is $HOME_DIR
-SSH_KEY="../id_tunnel_rsa.pub"
+SSH_KEY="../id_tunnel_rsa"
 SCRIPT="/home/kat/install/kat_client/"
 SERVER="kat@10.2.3.55"
 main(){
-    LAST_VERSION=$(cat VERSION)
+    LAST_VERSION=$(cat "../VERSION")
     [ "$LAST_VERSION" == "" ] && LAST_VERSION=0
     CHECK_VERSION=$(ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${SERVER} "cat install/kat_client/VERSION")
 
