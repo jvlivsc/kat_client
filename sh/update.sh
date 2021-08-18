@@ -6,8 +6,7 @@ SCRIPT="/home/kat/install/kat_client/"
 SERVER="kat@10.2.3.55"
 
 main(){
-    LAST_VERSION=$(head -n 1 "../VERSION" | cut -d '.' -f2)
-    # LAST_VERSION=${LAST_VERSION##*.}
+    LAST_VERSION=$(head -n 1 "VERSION" | cut -d '.' -f2)
     [ -z $LAST_VERSION ] && LAST_VERSION=0
     echo "Last version: $LAST_VERSION"
 
