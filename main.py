@@ -55,7 +55,13 @@ def loop():
         is_diffs = False
         try:
             rq = requests.get('http://' + cfg.SERVER + '/api/host/', data=rq_data)
-            is_diffs = checks.has_differencess(rq_data, json.loads(rq.text))
+
+            try:
+                from_server = json.loads(rq.text)
+                is_diffs = checks.has_differencess(rq_data, from_server)
+            except JSONDecodeError as json_error:
+                logger.error(f'{json_error}')
+
         except ConnectionError as connection_error:
             logger.error(f'{connection_error}')
 
@@ -132,7 +138,7 @@ def main():
         maxBytes=10485760,
         backupCount=3
     )
-    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 

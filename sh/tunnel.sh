@@ -110,7 +110,7 @@ main () {
         #поднимаем тунель
         # echo "dBug" "PID файла не существует"
         # echo "dBug" "Поднимает тунель"
-        nice autossh -M $RANDOM -N -i "../id_tunnel_rsa" -o "StrictHostKeyChecking=no" -o "ExitOnForwardFailure=yes" -o "ServerAliveInterval=5" -o "ServerAliveCountMax=3" -R $SSH_PORT:localhost:22 -R $VNC_PORT:localhost:6080 $USER@$SERVER 2 &
+        nice autossh -M $RANDOM -N -i "../id_tunnel_rsa.pub" -o "StrictHostKeyChecking=no" -o "ExitOnForwardFailure=yes" -o "ServerAliveInterval=5" -o "ServerAliveCountMax=3" -R $SSH_PORT:localhost:22 -R $VNC_PORT:localhost:6080 $USER@$SERVER 2 &
         FILE_PID=$!
         # echo "dBug" "autossh PID -> $FILE_PID"
         echo $FILE_PID > /var/run/autossh_tunnel.pid
