@@ -133,11 +133,13 @@ def loop():
 def main():
     logger = logging.getLogger('main')
     logger.setLevel(cfg.LOG_LEVEL)
+
     file_handler = RotatingFileHandler(
         '/var/log/kat_client.log',
         maxBytes=10485760,
         backupCount=3
     )
+
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -146,12 +148,14 @@ def main():
     logger.info(f'> log level: {logger.level}')
 
     logger.info('> Check updates')
+
     if update.update():
         logger.info('All scripts up to date')
     else:
         logger.warning('Can\'t update scripts!')
 
     logger.info('> Init')
+
     if client_init.init():
         logger.info('Success setup initial parameters.')
     else:
@@ -159,20 +163,24 @@ def main():
 
     while True:
         start_time = time.time()
+
         loop()
+
         execution_time = time.time() - start_time
+
         if cfg.ADAPTIVE_DELAY:
             logger.info('Adaptive mode ON')
+
             if execution_time > cfg.ADAPTIVE_DELAY_VALUE:
                 delta = execution_time - cfg.ADAPTIVE_DELAY_VALUE
                 cfg.SLEEP = cfg.SLEEP - delta if (cfg.SLEEP - delta) > 0 else 1
-            logger.debug(f'Current delay: {execution_time}')
+
             logger.debug(f'Adaptive delay: {cfg.ADAPTIVE_DELAY_VALUE}')
         else:
             logger.info('Adaptive mode OFF')
-            logger.debug(f'Current delay: {execution_time}')
             time.sleep(cfg.SLEEP)
-        # logger.debug(f'Execution time: {execution_time}')
+
+        logger.debug(f'Current delay: {execution_time}')
 
 
 if __name__ == "__main__":
