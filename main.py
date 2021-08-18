@@ -160,8 +160,19 @@ def main():
     while True:
         start_time = time.time()
         loop()
-        time.sleep(cfg.SLEEP)
-        logger.debug(f'Execution time: {time.time() - start_time}')
+        execution_time = time.time() - start_time
+        if cfg.ADAPTIVE_DELAY:
+            logger.info('Adaptive mode ON')
+            if execution_time > cfg.ADAPTIVE_DELAY_VALUE:
+                delta = execution_time - cfg.ADAPTIVE_DELAY_VALUE
+                cfg.SLEEP = cfg.SLEEP - delta if (cfg.SLEEP - delta) > 0 else 1
+            logger.debug(f'Current delay: {execution_time}')
+            logger.debug(f'Adaptive delay: {cfg.ADAPTIVE_DELAY_VALUE}')
+        else:
+            logger.info('Adaptive mode OFF')
+            logger.debug(f'Current delay: {execution_time}')
+            time.sleep(cfg.SLEEP)
+        # logger.debug(f'Execution time: {execution_time}')
 
 
 if __name__ == "__main__":
