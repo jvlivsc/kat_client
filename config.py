@@ -8,5 +8,5 @@ USER = 'kat'
 DATAFILE = '/home/kassa/data.dat'
 LOG_LEVEL = logging.DEBUG
 SLEEP = 5
-ADAPTIVE_DELAY = False
+ADAPTIVE_DELAY = True
 ADAPTIVE_DELAY_VALUE = 10
