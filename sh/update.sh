@@ -21,6 +21,7 @@ main(){
     else
         echo "Updating $LAST_VERSION to $CHECK_VERSION"
         rsync -a -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" ${SERVER}:${SCRIPT} ${HOME_DIR}
+        echo "last command returns $?"
         [ $? -eq 0 ] || echo "Can not download update"
         # chmod 740 ${HOME_DIR}
         systemctl daemon-reload

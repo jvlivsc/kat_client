@@ -7,6 +7,7 @@ import config as cfg
 import netifaces
 import os
 import time
+import threading
 
 from pathlib import Path
 from configparser import ConfigParser
@@ -14,8 +15,6 @@ from tools import update, client_init, checks, register, system_info
 from logging.handlers import RotatingFileHandler
 from requests import ConnectionError
 from json.decoder import JSONDecodeError
-
-online = False
 
 
 def check_param(host_data, param, check):
@@ -40,37 +39,40 @@ def check_param(host_data, param, check):
     return value
 
 
-def loop():
-    global online
+def threaded_update(interval=cfg.UPDATE_INTERVAL):
+    logger = logging.getLogger('main.update')
 
+    while True:
+        result = update.update()
+        logger.debug(f'Check updates result: {result}')
+        time.sleep(interval)
+
+
+def loop():
     logger = logging.getLogger('main.loop')
     host_data = {}
+    host_rq = ""
 
     if checks.check_alive():
-        if not online:
-            logger.info('Host online.')
-            online = True
-
         rq_data = system_info.sys_info()
         is_diffs = False
         try:
-            rq = requests.get('http://' + cfg.SERVER + '/api/host/', data=rq_data)
-
-            try:
-                from_server = json.loads(rq.text)
-                is_diffs = checks.has_differencess(rq_data, from_server)
-            except JSONDecodeError as json_error:
-                logger.error(f'{json_error}')
-
+            host_rq = requests.get('http://' + cfg.SERVER + '/api/host/', data=rq_data)
         except ConnectionError as connection_error:
             logger.error(f'{connection_error}')
 
         try:
-            host_data = json.loads(rq.text)
+            from_server = json.loads(host_rq.text)
+            is_diffs = checks.has_differencess(rq_data, from_server)
+        except JSONDecodeError as json_error:
+            logger.error(f'{json_error}')
+
+        try:
+            host_data = json.loads(host_rq.text)
         except JSONDecodeError:
             host_data = {}
 
-        if rq.status_code == 400 or is_diffs:
+        if host_rq.status_code == 400 or is_diffs:
             logger.warning('Host not registered, try to register')
 
             info = system_info.sys_info()
@@ -86,7 +88,7 @@ def loop():
             else:
                 logger.error('Registration error!')
 
-        if rq.status_code == 200:
+        if host_rq.status_code == 200:
             logger.info('Host alredy registered, checking ssh tunnel')
             tunnel_up = checks.check_tunnel(host_data['ssh'], host_data['vnc'])
 
@@ -103,10 +105,6 @@ def loop():
                 logger.info('Server touched.')
             else:
                 logger.warning('Can\'t touch server!')
-    else:
-        if online:
-            logger.warning('Host offline!')
-            online = False
 
     data_file = Path(cfg.DATAFILE)
     checks_data = ConfigParser()
@@ -143,16 +141,16 @@ def main():
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
-
     logger.info('---------- Run ----------')
-    logger.info(f'> log level: {logger.level}')
 
     logger.info('> Check updates')
+    # if update.update():
+    #     logger.info('All scripts up to date')
+    # else:
+    #     logger.warning('Can\'t update scripts!')
 
-    if update.update():
-        logger.info('All scripts up to date')
-    else:
-        logger.warning('Can\'t update scripts!')
+    update_thread = threading.Thread(target=threaded_update, daemon=True)
+    update_thread.start()
 
     logger.info('> Init')
 
