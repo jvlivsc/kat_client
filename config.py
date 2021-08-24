@@ -11,3 +11,5 @@ SLEEP = 5
 ADAPTIVE_DELAY = True
 ADAPTIVE_DELAY_VALUE = 10
 UPDATE_INTERVAL = 600
+
+AUDIO_PATH = "/home/kassa/Desktop/Объявления"

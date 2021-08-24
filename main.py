@@ -18,8 +18,7 @@ from requests import ConnectionError
 from json.decoder import JSONDecodeError
 
 
-def check_param(host_data, param, check):
-    value = False
+def check_param(host_data, param):
     try:
         mp_check_list = list(map(
             lambda v: (v[param]),
@@ -30,14 +29,7 @@ def check_param(host_data, param, check):
 
     is_mp_checks = any(mp_check_list)
 
-    if is_mp_checks:
-        mp_check_result = check
-        if mp_check_result:
-            value = True
-        else:
-            value = False
-
-    return value
+    return is_mp_checks
 
 
 def threaded_update(interval=cfg.UPDATE_INTERVAL):
@@ -107,6 +99,12 @@ def loop():
             else:
                 logger.warning('Can\'t touch server!')
 
+            if check_param(host_data, 'load_announcements'):
+                announcement.sync_announcements(
+                    announcement.get_announcements(host_data['pk']),
+                    cfg.AUDIO_PATH
+                )
+
     data_file = Path(cfg.DATAFILE)
     checks_data = ConfigParser()
 
@@ -120,9 +118,16 @@ def loop():
         }
 
     data = checks_data['DATA']
-    data['mp'] = str(check_param(host_data, 'check_mp', checks.check_mp()))
-    data['fp'] = str(check_param(host_data, 'check_fp', checks.check_fp()))
-    data['asu'] = str(check_param(host_data, 'check_asu', checks.check_asu()))
+
+    if check_param(host_data, 'check_mp'):
+        data['mp'] = str(checks.check_mp())
+
+    if check_param(host_data, 'check_fp'):
+        data['fp'] = str(checks.check_fp)
+
+    if check_param(host_data, 'check_asu'):
+        data['asu'] = str(checks.check_asu())
+
     checks_data['DATA'] = data
 
     with open(data_file, 'w') as conf:
