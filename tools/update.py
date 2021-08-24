@@ -8,7 +8,7 @@ def update():
     logger = logging.getLogger('main.update.update')
     logger.info('> Update scripts')
 
-    update_status = subprocess.run(['bash', '../sh/update.sh'], capture_output=True)
+    update_status = subprocess.run(['bash', 'sh/update.sh'], capture_output=False)
 
     logger.debug(f'Update status code: {update_status.returncode}')
 

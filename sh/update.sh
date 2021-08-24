@@ -6,27 +6,27 @@ SCRIPT="/home/kat/install/kat_client/"
 SERVER="kat@10.2.3.55"
 
 main(){
-    LAST_VERSION=$(head -n 1 "VERSION" | cut -d '.' -f2)
-    [ -z $LAST_VERSION ] && LAST_VERSION=0
-    echo "Last version: $LAST_VERSION"
+    app_version=$(head -n 1 "VERSION" | cut -d '.' -f2)
+    [ -z $app_version ] && app_version=0
+    echo "Application version: $app_version"
 
-    CHECK_VERSION=$(ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${SERVER} "head -n 1 install/kat_client/VERSION | cut -d '.' -f2")
-    CHECK_VERSION=${CHECK_VERSION//[$'\t\r\n']}
-    [ -z $CHECK_VERSION ] && CHECK_VERSION=0
-    echo "New version: $CHECK_VERSION"
+    new_version=$(ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${SERVER} "head -n 1 install/kat_client/VERSION | cut -d '.' -f2")
+    new_version=${new_version//[$'\t\r\n']}
+    [ -z $new_version ] && new_version=0
+    echo "New version: $new_version"
 
-    if [ $CHECK_VERSION -le $LAST_VERSION ]
+    if [ $new_version -gt $app_version ]
     then
-        echo "No need to update"
-    else
-        echo "Updating $LAST_VERSION to $CHECK_VERSION"
+        echo "Updating $app_version to $new_version"
         rsync -a -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" ${SERVER}:${SCRIPT} ${HOME_DIR}
         echo "last command returns $?"
-        [ $? -eq 0 ] || echo "Can not download update"
+        [ $? -eq 0 ] || return "Can not download update"
         # chmod 740 ${HOME_DIR}
         systemctl daemon-reload
         systemctl restart kat-client.service
         echo "Done!"
+    else
+        echo "No updates needed"
     fi
     return 0
 }

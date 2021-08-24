@@ -8,10 +8,11 @@ import netifaces
 import os
 import time
 import threading
+import sys
 
 from pathlib import Path
 from configparser import ConfigParser
-from tools import update, client_init, checks, register, system_info
+from tools import update, client_init, checks, register, system_info, announcement
 from logging.handlers import RotatingFileHandler
 from requests import ConnectionError
 from json.decoder import JSONDecodeError
@@ -140,7 +141,10 @@ def main():
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s')
     file_handler.setFormatter(formatter)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+    # logger.addHandler(stream_handler)
     logger.info('---------- Run ----------')
 
     logger.info('> Check updates')

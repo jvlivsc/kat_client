@@ -63,7 +63,7 @@ def check_mp():
     logger = logging.getLogger('main.checks.check_mp')
     logger.info('> Matrix printer')
 
-    mp_status = subprocess.run(['bash', '../sh/mp.sh'], capture_output=True)
+    mp_status = subprocess.run(['bash', '../sh/mp.sh'], capture_output=False)
 
     logger.debug(f'Return code for mp.sh: {mp_status.returncode}')
 
@@ -90,7 +90,7 @@ def check_fp():
         logger.info('Setting up fiscal printer')
         fp_status = subprocess.run(
             ['bash', '../sh/fp.sh', iface[0], iface[1]],
-            capture_output=True
+            capture_output=False
         )
         logger.debug(f'Return code for fp.sh: {fp_status.returncode}')
         if fp_status.returncode == 0:
