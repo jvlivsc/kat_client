@@ -100,8 +100,9 @@ def loop():
                 logger.warning('Can\'t touch server!')
 
             if check_param(host_data, 'load_announcements'):
+                station_id = host_data['station']['pk']
                 announcement.sync_announcements(
-                    announcement.get_announcements(host_data['pk']),
+                    announcement.get_announcements(station_id),
                     cfg.AUDIO_PATH
                 )
 
@@ -123,13 +124,12 @@ def loop():
         data['mp'] = str(checks.check_mp())
 
     if check_param(host_data, 'check_fp'):
-        data['fp'] = str(checks.check_fp)
+        data['fp'] = str(checks.check_fp())
 
     if check_param(host_data, 'check_asu'):
         data['asu'] = str(checks.check_asu())
 
     checks_data['DATA'] = data
-
     with open(data_file, 'w') as conf:
         checks_data.write(conf)
 
@@ -149,17 +149,7 @@ def main():
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
-    # logger.addHandler(stream_handler)
     logger.info('---------- Run ----------')
-
-    logger.info('> Check updates')
-    # if update.update():
-    #     logger.info('All scripts up to date')
-    # else:
-    #     logger.warning('Can\'t update scripts!')
-
-    update_thread = threading.Thread(target=threaded_update, daemon=True)
-    update_thread.start()
 
     logger.info('> Init')
 
@@ -167,6 +157,11 @@ def main():
         logger.info('Success setup initial parameters.')
     else:
         logger.warning('Trouble with setup initial parameters.')
+
+    logger.info('> Check updates')
+
+    update_thread = threading.Thread(target=threaded_update, daemon=True)
+    update_thread.start()
 
     while True:
         start_time = time.time()

@@ -1,19 +1,22 @@
+from posix import listdir
 import requests
 import json
-# import config as cfg
+import config as cfg
 import subprocess
+import os
 
 
 def get_announcements(id):
-    # url = 'http://' + cfg.SERVER + '/api/storage/announcements/'
-    url = 'http://' + '10.2.3.55' + '/api/storage/announcements/'
+    url = 'http://' + cfg.SERVER + '/api/storage/announcements/'
     file_list = []
     try:
         rq = requests.get(url, data={'id': id})
         url_json = json.loads(rq.text)
-        for j in url_json['results']:
-            # file_list.append('http://' + cfg.SERVER + j['file'])
-            file_list.append('http://' + '10.2.3.55' + j['file'])
+        if url_json['success']:
+            for j in url_json['results']:
+                file_list.append('http://' + cfg.SERVER + j['file'])
+        else:
+            print(url_json['results'])
     except requests.ConnectionError as e:
         print(e.strerror)
 
@@ -21,13 +24,13 @@ def get_announcements(id):
 
 
 def sync_announcements(urls, folder):
+    dir = cfg.AUDIO_PATH
+    files = os.listdir(dir)
+    files_to_rm = [file for file in files if not any(file in url for url in urls)]
+    for file in files_to_rm:
+        os.remove(os.path.join(dir, file))
+
     for u in urls:
-        result = subprocess.run(['wget', '-m', u, '-nd', '-P', folder], capture_output=True)
-        print(result.returncode)
-        if result.returncode == 0:
-            return True
+        wget = subprocess.run(['wget', '-m', u, '-nd', '-P', folder], capture_output=True)
 
-    return False
-
-# fl = get_announcements(2)
-# sync_announcements(fl, 'temp')
+    return wget

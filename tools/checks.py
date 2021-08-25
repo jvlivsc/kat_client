@@ -63,7 +63,7 @@ def check_mp():
     logger = logging.getLogger('main.checks.check_mp')
     logger.info('> Matrix printer')
 
-    mp_status = subprocess.run(['bash', '../sh/mp.sh'], capture_output=False)
+    mp_status = subprocess.run(['bash', '../sh/mp.sh'], capture_output=True)
 
     logger.debug(f'Return code for mp.sh: {mp_status.returncode}')
 

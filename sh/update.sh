@@ -6,7 +6,7 @@ SCRIPT="/home/kat/install/kat_client/"
 SERVER="kat@10.2.3.55"
 
 main(){
-    app_version=$(head -n 1 "VERSION" | cut -d '.' -f2)
+    app_version=$(head -n 1 "../VERSION" | cut -d '.' -f2)
     [ -z $app_version ] && app_version=0
     echo "Application version: $app_version"
 
