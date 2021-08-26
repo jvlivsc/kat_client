@@ -113,21 +113,24 @@ def loop():
         checks_data.read(data_file)
     else:
         checks_data['DATA'] = {
-            'mp': False,
-            'fp': False,
-            'asu': False
+            'mp': True,
+            'fp': True,
+            'asu': True
         }
 
     data = checks_data['DATA']
 
+    mp_state = checks.check_mp()
     if check_param(host_data, 'check_mp'):
-        data['mp'] = str(checks.check_mp())
+        data['mp'] = str(mp_state)
 
+    fp_state = checks.check_fp()
     if check_param(host_data, 'check_fp'):
-        data['fp'] = str(checks.check_fp())
+        data['fp'] = str(fp_state)
 
+    asu_state = checks.check_asu()
     if check_param(host_data, 'check_asu'):
-        data['asu'] = str(checks.check_asu())
+        data['asu'] = str(asu_state)
 
     checks_data['DATA'] = data
     with open(data_file, 'w') as conf:
