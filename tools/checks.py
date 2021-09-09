@@ -14,7 +14,7 @@ def check_alive():
     logger = logging.getLogger('main.checks.check_alive')
     logger.info(f'Checking {cfg.SERVER} is alive')
     result = subprocess.run(
-        ['ping', '-c', '1', cfg.SERVER],
+        ['ping', '-c', '3', cfg.SERVER],
         capture_output=True
     )
     logger.debug(f'Return code for check_alive ping: {result.returncode}')
@@ -35,7 +35,7 @@ def check_asu():
     logger.info(f'Checking {cfg.ASU_SERVER} is alive')
 
     server_status = subprocess.run(
-        ['ping', '-c', '1', cfg.ASU_SERVER],
+        ['ping', '-c', '3', cfg.ASU_SERVER],
         capture_output=True
     )
 

@@ -54,11 +54,15 @@ def sync_announcements(urls, folder):
     for file in files_to_rm:
         os.remove(os.path.join(dir, file))
 
+    wget = None
     for url in urls:
-        wget = subprocess.run(['wget', '-m', url, '-nd', '-P', folder], capture_output=True)
+        wget = subprocess.run(
+            ['wget', '-m', url, '-nd', '-P', folder],
+            capture_output=True
+        )
 
         logger.debug(f'Sync result for {url}: {wget.stdout}')
 
     logger.info('End sync')
 
-    return wget.stdout
+    return wget
