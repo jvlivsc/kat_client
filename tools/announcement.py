@@ -58,10 +58,11 @@ def sync_announcements(urls, folder):
     for url in urls:
         wget = subprocess.run(
             ['wget', '-m', url, '-nd', '-P', folder],
-            capture_output=True
+            capture_output=True,
+            universal_newlines=True
         )
 
-        logger.debug(f'Sync result for {url}: {wget.stdout}')
+        logger.debug(f'Sync result for {url}: \n{wget.stdout}')
 
     logger.info('End sync')
 

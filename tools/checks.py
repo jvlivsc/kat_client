@@ -15,8 +15,10 @@ def check_alive():
     logger.info(f'Checking {cfg.SERVER} is alive')
     result = subprocess.run(
         ['ping', '-c', '3', cfg.SERVER],
-        capture_output=True
+        capture_output=True,
+        universal_newlines=True
     )
+    logger.debug(f'Output: \n{result.stdout}')
     logger.debug(f'Return code for check_alive ping: {result.returncode}')
     if result.returncode == 0:
         logger.info(f'{cfg.SERVER} is ONLINE')
@@ -36,9 +38,10 @@ def check_asu():
 
     server_status = subprocess.run(
         ['ping', '-c', '3', cfg.ASU_SERVER],
-        capture_output=True
+        capture_output=True,
+        universal_newlines=True
     )
-
+    logger.debug(f'Output: \n{server_status.stdout}')
     logger.debug(f'Return code for asu ping: {server_status.returncode}')
 
     if server_status.returncode == 0:
@@ -90,8 +93,10 @@ def check_fp():
         logger.info('Setting up fiscal printer')
         fp_status = subprocess.run(
             ['bash', '../sh/fp.sh', iface[0], iface[1]],
-            capture_output=False
+            capture_output=True,
+            universal_newlines=True
         )
+        logger.debug(f'Output: \n{fp_status.stdout}')
         logger.debug(f'Return code for fp.sh: {fp_status.returncode}')
         if fp_status.returncode == 0:
             result = True
@@ -110,8 +115,10 @@ def check_tunnel(ssh, vnc):
 
     result = subprocess.run(
         ['bash', '../sh/tunnel.sh', cfg.SERVER, cfg.USER, str(ssh), str(vnc)],
-        capture_output=False
+        capture_output=False,
+        universal_newlines=True
     )
+    logger.debug(f'Output: \n{result.stdout}')
     logger.debug(f'Return code for tunnel.sh: {result.returncode}')
     if result.returncode == 0:
         logger.info('> SSH tunnels is up')

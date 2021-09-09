@@ -20,8 +20,10 @@ def init():
     if len(iface) > 1:
         init_status = subprocess.run(
             ['bash', '../sh/init.sh', iface[0], iface[1]],
-            capture_output=True
+            capture_output=True,
+            universal_newlines=True
         )
+        logger.debug(f'Output: \n{init_status.stdout}')
         logger.debug(f'Return code for init.sh: {init_status.returncode}')
 
         if init_status.returncode == 0:
