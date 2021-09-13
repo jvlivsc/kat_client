@@ -1,4 +1,3 @@
-from json.decoder import JSONDecodeError
 from posix import listdir
 import requests
 import json
@@ -48,8 +47,11 @@ def sync_announcements(urls, folder):
     logger = logging.getLogger('main.announce.sync')
     logger.info(f'Sync files from server {cfg.SERVER} and local dir {cfg.AUDIO_PATH}')
     dir = cfg.AUDIO_PATH
-    files = os.listdir(dir)
-    files_to_rm = [file for file in files if not any(file in url for url in urls)]
+    files_to_rm = []
+
+    if os.path.isdir(dir):
+        files = os.listdir(dir)
+        files_to_rm = [file for file in files if not any(file in url for url in urls)]
 
     for file in files_to_rm:
         os.remove(os.path.join(dir, file))

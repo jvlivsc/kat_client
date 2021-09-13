@@ -9,6 +9,7 @@ import os
 import time
 import threading
 import sys
+import shutil
 
 from pathlib import Path
 from configparser import ConfigParser
@@ -116,6 +117,11 @@ def loop():
                     announcement.get_announcements(station_id),
                     cfg.AUDIO_PATH
                 )
+            else:
+                try:
+                    shutil.rmtree(cfg.AUDIO_PATH)
+                except OSError as e:
+                    logger.warning(f'Can\'t remove folder {e.filename} - {e.strerror}')
 
     data_file = Path(cfg.DATAFILE)
     checks_data = ConfigParser()
