@@ -71,9 +71,20 @@ def loop():
             info = system_info.sys_info()
             ip = info['ip']
             subnet = ip.replace(ip[ip.rfind('.') + 1:len(ip)], '0/24')
-            rq_subnet = requests.get('http://' + cfg.SERVER + '/api/station/subnet/', data={'name': f'{subnet}'})
-            subnet_json = json.loads(rq_subnet.text)
-            info['station'] = subnet_json['results']['station']
+            try:
+                rq_subnet = requests.get(
+                    'http://' + cfg.SERVER + '/api/station/subnet/',
+                    data={'name': f'{subnet}'}
+                )
+            except ConnectionError as request_error:
+                logger.error(f'Can not get subnets with error: {request_error}')
+
+            try:
+                subnet_json = json.loads(rq_subnet.text)
+                info['station'] = subnet_json['results']['station']
+            except JSONDecodeError:
+                subnet_json = {}
+
             logger.debug(f'Registration data: {info}')
 
             if register.register(info):

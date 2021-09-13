@@ -131,11 +131,11 @@ def check_tunnel(ssh, vnc):
 
 def has_differencess(info, rq):
     local_ip = info['ip']
-    stored_ip = rq['ip']
+    stored_ip = rq['ip'] if 'ip' in rq else ''
     local_mac = info['mac']
-    stored_mac = rq['mac']
+    stored_mac = rq['mac'] if 'mac' in rq else ''
     local_hostname = info['hostname']
-    stored_hostname = rq['hostname']
+    stored_hostname = rq['hostname'] if 'hostname' in rq else ''
 
     if local_ip == stored_ip and local_mac == stored_mac and local_hostname == stored_hostname:
         result = False
