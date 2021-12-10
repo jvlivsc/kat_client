@@ -3,7 +3,7 @@
 HOME_DIR="/opt/kat_client/"
 SSH_KEY="../id_tunnel_rsa"
 SCRIPT="/home/kat/install/kat_client/"
-SERVER="kat@10.2.3.55"
+SERVER=""
 
 main(){
     app_version=$(head -n 1 "../VERSION" | cut -d '.' -f2)
